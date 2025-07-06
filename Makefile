@@ -5,6 +5,7 @@ MODULEDIR = modules
 BUILDDIR = build
 TARGET = $(BUILDDIR)/funhouse
 TWITCH_TEST_TARGET = $(BUILDDIR)/twitch_test
+TWITCH_EXAMPLE_TARGET = $(BUILDDIR)/twitch_integration_example
 
 # SDL2 and OpenGL flags
 SDL2_CFLAGS = $(shell sdl2-config --cflags)
@@ -31,7 +32,7 @@ TEST_SOURCES = $(wildcard $(TESTDIR)/*.cpp $(TESTDIR)/*/*.cpp)
 TEST_OBJECTS = $(patsubst $(TESTDIR)/%.cpp,$(BUILDDIR)/tests/%.o,$(TEST_SOURCES))
 
 # Test-specific modules (only what's needed for testing)
-TEST_MODULE_SOURCES = $(wildcard $(MODULEDIR)/input/*.cpp $(MODULEDIR)/world/*.cpp)
+TEST_MODULE_SOURCES = $(wildcard $(MODULEDIR)/input/*.cpp $(MODULEDIR)/world/*.cpp $(MODULEDIR)/twitch/*.cpp)
 TEST_MODULE_OBJECTS = $(patsubst $(MODULEDIR)/%.cpp,$(BUILDDIR)/modules/%.o,$(TEST_MODULE_SOURCES))
 
 all: $(TARGET)
@@ -44,6 +45,14 @@ $(TARGET): $(MAIN_OBJECTS) $(MODULE_OBJECTS)
 twitch-test: $(BUILDDIR)/twitch_test
 $(BUILDDIR)/twitch_test: $(TWITCH_TEST_OBJECT) $(BUILDDIR)/modules/twitch/TwitchIrcClient.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ -pthread
+
+# Twitch integration example
+twitch-example: $(TWITCH_EXAMPLE_TARGET)
+$(TWITCH_EXAMPLE_TARGET): $(BUILDDIR)/twitch_integration_example.o $(BUILDDIR)/modules/input/InputSystem.o $(BUILDDIR)/modules/input/InputManager.o $(BUILDDIR)/modules/input/InputContext.o $(BUILDDIR)/modules/input/InputContextManager.o $(BUILDDIR)/modules/world/World.o $(BUILDDIR)/modules/twitch/TwitchIrcClient.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(BUILDDIR)/twitch_integration_example.o: examples/twitch_integration_example.cpp | $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 # Test targets
 test: $(TEST_TARGET)
@@ -86,10 +95,13 @@ run: $(TARGET)
 run-twitch-test: twitch-test
 	./$(BUILDDIR)/twitch_test
 
+run-twitch-example: twitch-example
+	./$(TWITCH_EXAMPLE_TARGET)
+
 run-tests: test
 	./$(TEST_TARGET)
 
 test-verbose: test
 	./$(TEST_TARGET) -v high
 
-.PHONY: all clean run twitch-test run-twitch-test test run-tests test-verbose test run-tests test-verbose
+.PHONY: all clean run twitch-test run-twitch-test twitch-example run-twitch-example test run-tests test-verbose

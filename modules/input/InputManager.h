@@ -3,7 +3,10 @@
 #include "InputSystem.h"
 #include "Commands/MouseCommands.h"
 #include "Commands/KeyboardCommands.h"
+#include "Commands/TwitchCommandAdapter.h"
 #include "../materials/Materials.h"
+#include "../twitch/TwitchIrcClient.h"
+#include <memory>
 
 namespace Funhouse {
 
@@ -13,6 +16,9 @@ public:
     
     void Initialize();
     
+    // Update method to poll Twitch commands
+    void Update();
+    
     MaterialType GetSelectedMaterial() const { return selectedMaterial_; }
     void SetSelectedMaterial(MaterialType material) { selectedMaterial_ = material; }
     
@@ -21,9 +27,16 @@ public:
     
     void HandleMouseDraw(int x, int y, bool leftButton, bool rightButton);
     
+    // Twitch integration
+    void EnableTwitchIntegration(const TwitchIrcClient::Config& config = TwitchIrcClient::Config());
+    void DisableTwitchIntegration();
+    bool IsTwitchEnabled() const { return twitchClient_ != nullptr; }
+    TwitchCommandAdapter* GetTwitchAdapter() { return twitchAdapter_.get(); }
+    
 private:
     void SetupDefaultBindings();
     void SetupContextBindings();
+    void SetupTwitchCommands();
     
     InputSystem* inputSystem_;
     ::World* world_;
@@ -32,6 +45,10 @@ private:
     
     int lastMouseX_ = -1;
     int lastMouseY_ = -1;
+    
+    // Twitch integration
+    std::unique_ptr<TwitchIrcClient> twitchClient_;
+    std::unique_ptr<TwitchCommandAdapter> twitchAdapter_;
 };
 
 } // namespace Funhouse

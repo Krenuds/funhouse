@@ -1,5 +1,6 @@
 #include "InputManager.h"
 #include <iostream>
+#include <sstream>
 
 namespace Funhouse {
 
@@ -280,6 +281,139 @@ void InputManager::HandleMouseDraw(int x, int y, bool leftButton, bool rightButt
     
     lastMouseX_ = worldX;
     lastMouseY_ = worldY;
+}
+
+void InputManager::Update() {
+    // Poll Twitch commands if enabled
+    if (twitchAdapter_) {
+        twitchAdapter_->Update();
+    }
+}
+
+void InputManager::EnableTwitchIntegration(const TwitchIrcClient::Config& config) {
+    // Disable existing integration if any
+    DisableTwitchIntegration();
+    
+    // Create and start Twitch client
+    twitchClient_ = std::make_unique<TwitchIrcClient>(config);
+    if (twitchClient_->start()) {
+        // Create adapter
+        twitchAdapter_ = std::make_unique<TwitchCommandAdapter>(twitchClient_.get(), inputSystem_);
+        
+        // Setup Twitch command handlers
+        SetupTwitchCommands();
+        
+        std::cout << "Twitch integration enabled for channel: #" << config.channel << std::endl;
+    } else {
+        std::cout << "Failed to start Twitch integration" << std::endl;
+        twitchClient_.reset();
+    }
+}
+
+void InputManager::DisableTwitchIntegration() {
+    if (twitchClient_) {
+        twitchClient_->stop();
+        twitchClient_.reset();
+        twitchAdapter_.reset();
+        std::cout << "Twitch integration disabled" << std::endl;
+    }
+}
+
+void InputManager::SetupTwitchCommands() {
+    if (!twitchAdapter_) {
+        return;
+    }
+    
+    // Register material selection commands
+    twitchAdapter_->RegisterCommandCallback("sand", 
+        [this](const std::string& username, const std::string&, const std::string&) {
+            selectedMaterial_ = MaterialType::Sand;
+            std::cout << "[Twitch] " << username << " selected Sand" << std::endl;
+        });
+    
+    twitchAdapter_->RegisterCommandCallback("water", 
+        [this](const std::string& username, const std::string&, const std::string&) {
+            selectedMaterial_ = MaterialType::Water;
+            std::cout << "[Twitch] " << username << " selected Water" << std::endl;
+        });
+    
+    twitchAdapter_->RegisterCommandCallback("stone", 
+        [this](const std::string& username, const std::string&, const std::string&) {
+            selectedMaterial_ = MaterialType::Stone;
+            std::cout << "[Twitch] " << username << " selected Stone" << std::endl;
+        });
+    
+    twitchAdapter_->RegisterCommandCallback("air", 
+        [this](const std::string& username, const std::string&, const std::string&) {
+            selectedMaterial_ = MaterialType::Air;
+            std::cout << "[Twitch] " << username << " selected Air" << std::endl;
+        });
+    
+    // Clear world command
+    twitchAdapter_->RegisterCommandCallback("clear", 
+        [this](const std::string& username, const std::string&, const std::string&) {
+            auto command = std::make_unique<ClearWorldCommand>(world_);
+            inputSystem_->QueueCommand(std::move(command));
+            std::cout << "[Twitch] " << username << " cleared the world" << std::endl;
+        });
+    
+    // Brush size commands
+    twitchAdapter_->RegisterCommandCallback("brush", 
+        [this](const std::string& username, const std::string&, const std::string& params) {
+            std::istringstream iss(params);
+            int size;
+            if (iss >> size && size >= 1 && size <= 50) {
+                brushSize_ = size;
+                std::cout << "[Twitch] " << username << " set brush size to " << size << std::endl;
+            }
+        });
+    
+    // Spawn command (example of parameterized command)
+    twitchAdapter_->RegisterCommandCallback("spawn", 
+        [this](const std::string& username, const std::string&, const std::string& params) {
+            std::istringstream iss(params);
+            std::string material;
+            int x, y;
+            if (iss >> material >> x >> y) {
+                // Convert material string to MaterialType
+                MaterialType mat = MaterialType::Air;
+                if (material == "sand") mat = MaterialType::Sand;
+                else if (material == "water") mat = MaterialType::Water;
+                else if (material == "stone") mat = MaterialType::Stone;
+                
+                // Convert to world coordinates (assuming same scaling as mouse)
+                int worldX = x / 4;
+                int worldY = y / 4;
+                
+                if (worldX >= 0 && worldX < world_->GetWidth() && 
+                    worldY >= 0 && worldY < world_->GetHeight()) {
+                    auto command = std::make_unique<PlaceMaterialCommand>(world_, worldX, worldY, mat);
+                    inputSystem_->QueueCommand(std::move(command));
+                    std::cout << "[Twitch] " << username << " spawned " << material 
+                              << " at (" << worldX << ", " << worldY << ")" << std::endl;
+                }
+            }
+        });
+    
+    // Help command
+    twitchAdapter_->RegisterCommandCallback("help", 
+        [](const std::string& username, const std::string&, const std::string&) {
+            std::cout << "[Twitch] " << username << " requested help. Available commands: "
+                      << "!sand, !water, !stone, !air, !clear, !brush [size], "
+                      << "!spawn [material] [x] [y]" << std::endl;
+        });
+    
+    // Set default handler to log unrecognized commands
+    twitchAdapter_->SetDefaultHandler(
+        [](const TwitchCommand& cmd) -> InputCommandPtr {
+            std::cout << "[Twitch] Unknown command from " << cmd.username 
+                      << ": !" << cmd.command;
+            if (!cmd.parameters.empty()) {
+                std::cout << " " << cmd.parameters;
+            }
+            std::cout << std::endl;
+            return nullptr;  // Don't create a command for unrecognized inputs
+        });
 }
 
 } // namespace Funhouse

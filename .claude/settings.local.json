@@ -22,7 +22,9 @@
       "Bash(tree:*)",
       "Bash(touch:*)",
       "Bash(./build/test_runner)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
