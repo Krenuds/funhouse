@@ -1,0 +1,95 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build and Development Commands
+
+### Building the Project
+```bash
+# Build the project
+make
+
+# Clean build artifacts
+make clean
+
+# Build and run
+make run
+```
+
+### Development Workflow
+The project currently uses GNU Make with C++17. The Makefile is configured to:
+- Compile all `.cpp` files from `src/` directory
+- Output object files to `build/` directory
+- Create executable at `build/hello`
+- Use optimization level -O2 with all warnings enabled
+
+## High-Level Architecture
+
+### Project Overview
+Funhouse is a Noita-inspired falling sand simulation engine implementing pixel-based physics. The core concept is that every pixel in the world is simulated with physics properties.
+
+### Key Technical Concepts
+
+#### 1. **Falling Sand Simulation Core**
+The foundation is a single-buffer pixel simulation where materials update based on simple rules:
+- **Sand**: Falls down, then diagonally if blocked
+- **Water**: Like sand but with horizontal spread
+- **Gas**: Inverted gravity (rises)
+- **Rigid Bodies**: Integration with Box2D for complex physics
+
+#### 2. **Update Order and Single Buffer**
+- Uses bottom-to-top update order for falling materials
+- Single buffer approach (no double buffering) for better performance
+- Randomized left/right bias to avoid visual artifacts
+
+#### 3. **Chunk System Architecture**
+- World divided into 64×64 pixel chunks
+- Dirty rectangle tracking per chunk for optimization
+- Only chunks marked as dirty get updated
+- Multi-threading uses 4-pass checker pattern for safe parallel updates
+
+#### 4. **Particle System**
+- Separate high-velocity particle simulation
+- Particles convert back to grid pixels on collision
+- Enables splashing effects and better liquid dynamics
+
+#### 5. **Rigid Body Integration**
+- Marching squares algorithm extracts contours from pixel groups
+- Douglas-Peucker simplifies contours
+- Triangulation creates physics mesh for Box2D
+- Pixels track their position within rigid bodies
+
+### Critical Implementation Details
+
+1. **Material Storage**: Each pixel stores material type, with potential for additional properties (temperature, lifetime, state data)
+
+2. **Multi-threading Safety**: The 4-pass checker pattern ensures threads work on chunks 2 chunks apart, preventing race conditions without mutexes
+
+3. **World Streaming**: Keeps 12 512×512 areas in memory, streaming to/from disk as player moves
+
+### Development Phases (from ROADMAP.md)
+Currently targeting Phase 1: Foundation
+- Window creation and OpenGL context
+- Basic game loop with fixed timestep
+- Input handling
+- Pixel buffer rendering
+
+### Important Design Decisions
+- **Single Buffer > Double Buffer**: Better for falling sand, less memory, simpler implementation
+- **Chunks for Optimization**: Essential for scaling beyond small prototypes
+- **Emergent Complexity**: Simple rules create complex behaviors
+- **Performance Target**: 1 million active pixels at 60 FPS
+
+## Key Documentation Files
+
+- `documentation/falling-sand-engine-guide.md`: Comprehensive technical guide for building the engine
+- `documentation/noita-tech-design-talk.md`: Insights from Noita developers on implementation and design challenges
+
+## Project Structure and Modularity
+
+- This project should be organized into modules. Each module should have its own claude.md associated with it. Thus, each module should essentially have its own folder.
+
+## Workflow Practices
+
+### Git and Version Control
+- After completing a task always make a git commit with a detailed description and push it.

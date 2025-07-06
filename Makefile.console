@@ -1,0 +1,31 @@
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -Imodules -Imodules/materials -Imodules/world
+SRCDIR = src
+MODULEDIR = modules
+BUILDDIR = build
+TARGET = $(BUILDDIR)/console_demo
+
+SOURCES = $(SRCDIR)/console_demo.cpp $(MODULEDIR)/world/World.cpp
+OBJECTS = $(BUILDDIR)/console_demo.o $(BUILDDIR)/World.o
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(BUILDDIR)/console_demo.o: $(SRCDIR)/console_demo.cpp | $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/World.o: $(MODULEDIR)/world/World.cpp | $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
+clean:
+	rm -rf $(BUILDDIR)
+
+run: $(TARGET)
+	./$(TARGET)
+
+.PHONY: all clean run
