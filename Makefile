@@ -24,6 +24,16 @@ MAIN_OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(MAIN_SOURCES))
 MODULE_OBJECTS = $(patsubst $(MODULEDIR)/%.cpp,$(BUILDDIR)/modules/%.o,$(MODULE_SOURCES))
 TWITCH_TEST_OBJECT = $(BUILDDIR)/twitch_test.o
 
+# Test configuration
+TESTDIR = tests
+TEST_TARGET = $(BUILDDIR)/test_runner
+TEST_SOURCES = $(wildcard $(TESTDIR)/*.cpp $(TESTDIR)/*/*.cpp)
+TEST_OBJECTS = $(patsubst $(TESTDIR)/%.cpp,$(BUILDDIR)/tests/%.o,$(TEST_SOURCES))
+
+# Test-specific modules (only what's needed for testing)
+TEST_MODULE_SOURCES = $(wildcard $(MODULEDIR)/input/*.cpp $(MODULEDIR)/world/*.cpp)
+TEST_MODULE_OBJECTS = $(patsubst $(MODULEDIR)/%.cpp,$(BUILDDIR)/modules/%.o,$(TEST_MODULE_SOURCES))
+
 all: $(TARGET)
 
 # Main application target
@@ -35,10 +45,23 @@ twitch-test: $(BUILDDIR)/twitch_test
 $(BUILDDIR)/twitch_test: $(TWITCH_TEST_OBJECT) $(BUILDDIR)/modules/twitch/TwitchIrcClient.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ -pthread
 
+# Test targets
+test: $(TEST_TARGET)
+$(TEST_TARGET): $(TEST_OBJECTS) $(TEST_MODULE_OBJECTS) $(BUILDDIR)/tests/external/catch_amalgamated.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp | $(BUILDDIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(BUILDDIR)/modules/%.o: $(MODULEDIR)/%.cpp | $(BUILDDIR)/modules
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/tests/%.o: $(TESTDIR)/%.cpp | $(BUILDDIR)/tests
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/tests/external/catch_amalgamated.o: $(TESTDIR)/external/catch_amalgamated.cpp | $(BUILDDIR)/tests/external
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
@@ -47,6 +70,12 @@ $(BUILDDIR):
 
 $(BUILDDIR)/modules:
 	mkdir -p $(BUILDDIR)/modules
+
+$(BUILDDIR)/tests:
+	mkdir -p $(BUILDDIR)/tests
+
+$(BUILDDIR)/tests/external:
+	mkdir -p $(BUILDDIR)/tests/external
 
 clean:
 	rm -rf $(BUILDDIR)
@@ -57,4 +86,10 @@ run: $(TARGET)
 run-twitch-test: twitch-test
 	./$(BUILDDIR)/twitch_test
 
-.PHONY: all clean run twitch-test run-twitch-test
+run-tests: test
+	./$(TEST_TARGET)
+
+test-verbose: test
+	./$(TEST_TARGET) -v high
+
+.PHONY: all clean run twitch-test run-twitch-test test run-tests test-verbose test run-tests test-verbose
