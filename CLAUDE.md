@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 GOLDEN RULE: TEST-DRIVEN DEVELOPMENT (TDD) 🚨
+**This is a test-driven development environment. ALWAYS follow TDD practices:**
+1. **Write tests FIRST** - Before implementing any new feature or fixing any bug
+2. **Red-Green-Refactor** cycle:
+   - RED: Write a failing test that defines the desired behavior
+   - GREEN: Write minimal code to make the test pass
+   - REFACTOR: Improve the code while keeping tests green
+3. **No code without tests** - Every public API must have corresponding unit tests
+4. **Test coverage target**: Maintain minimum 80% coverage for all modules
+5. **Run tests before commits** - Always run `make test` before committing
+
+### TDD Workflow for Claude Code:
+1. When asked to implement a feature, FIRST create the test file
+2. Define the expected behavior through test cases
+3. Run tests to ensure they fail (Red phase)
+4. Implement the minimal code to pass tests (Green phase)
+5. Refactor if needed while ensuring tests still pass
+6. Document test rationale in test files
+
 ## Tech Stack
 - C++17 (migrating to C++20 for modules support)
 - GNU Make build system (future: CMake 3.20+)
@@ -9,6 +28,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Box2D for rigid body physics
 - SDL2 for window management and input
 - Single-threaded initially, multi-threading planned
+- **Testing Framework**: Catch2 v3.7.1
 
 ## Architecture Principles
 - Data-oriented design for cache efficiency
@@ -19,6 +39,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Emergent complexity from simple rules
 
 ## Build and Development Commands
+
+### Testing Commands (USE THESE FIRST!)
+```bash
+# Run all tests
+make test
+
+# Run tests with verbose output
+make test-verbose
+
+# Build and run tests directly
+make run-tests
+```
 
 ### Building the Project
 ```bash
@@ -36,8 +68,21 @@ make run
 The project currently uses GNU Make with C++17. The Makefile is configured to:
 - Compile all `.cpp` files from `src/` directory
 - Output object files to `build/` directory
-- Create executable at `build/hello`
+- Create executable at `build/funhouse`
 - Use optimization level -O2 with all warnings enabled
+- **Run tests with `make test` before any commits**
+
+### Test Organization
+```
+tests/
+├── external/           # Catch2 framework files
+├── input/             # Input system tests
+├── simulation/        # Physics simulation tests (TBD)
+├── rendering/         # Rendering tests (TBD)
+├── world/            # World management tests (TBD)
+└── test_main.cpp     # Test runner entry point
+```
+**Every module in `modules/` MUST have corresponding tests in `tests/`**
 
 ## High-Level Architecture
 
@@ -161,10 +206,22 @@ The project follows an engine-first approach:
 
 ## Workflow Practices
 
+### Test-Driven Development Example
+When implementing a new feature (e.g., "Add gravity to water particles"):
+1. **First** create `tests/simulation/test_water_gravity.cpp`
+2. Write test cases that define expected behavior
+3. Run `make test` to see tests fail (RED)
+4. Implement minimal code in `modules/simulation/`
+5. Run `make test` until all tests pass (GREEN)
+6. Refactor and optimize while keeping tests green
+7. Commit with message: "feat(simulation): Add gravity to water particles with TDD"
+
 ### Git and Version Control
+- **Always run `make test` before committing**
 - After completing a task always make a git commit with a detailed description and push it
 - Use feature branches for new modules
 - Commit messages should follow: "module: description"
+- Include "TDD" in commit messages when following test-driven development
 
 ## Problem-Solving Strategies
 - If a build fails, or something goes wrong more than TWICE, look it up online.
