@@ -19,7 +19,10 @@
       "Bash(ldconfig:*)",
       "Bash(rm:*)",
       "Bash(./build/funhouse)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(touch:*)",
+      "Bash(./build/test_runner)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
