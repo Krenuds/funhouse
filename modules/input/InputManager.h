@@ -23,6 +23,7 @@ public:
     
 private:
     void SetupDefaultBindings();
+    void SetupContextBindings();
     
     InputSystem* inputSystem_;
     ::World* world_;

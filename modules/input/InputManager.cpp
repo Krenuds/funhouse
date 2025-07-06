@@ -9,9 +9,119 @@ InputManager::InputManager(InputSystem* inputSystem, ::World* world)
 
 void InputManager::Initialize() {
     SetupDefaultBindings();
+    SetupContextBindings();
+}
+
+void InputManager::SetupContextBindings() {
+    // Create gameplay context
+    auto gameplayContext = std::make_shared<InputContext>("gameplay");
+    gameplayContext->SetPriority(10);
+    
+    // Material selection
+    gameplayContext->BindKey(SDL_SCANCODE_1, [this]() {
+        return std::make_unique<SelectMaterialCommand>(
+            MaterialType::Air,
+            [this](MaterialType mat) { 
+                selectedMaterial_ = mat;
+                std::cout << "Selected: Air" << std::endl;
+            }
+        );
+    });
+    
+    gameplayContext->BindKey(SDL_SCANCODE_2, [this]() {
+        return std::make_unique<SelectMaterialCommand>(
+            MaterialType::Sand,
+            [this](MaterialType mat) { 
+                selectedMaterial_ = mat;
+                std::cout << "Selected: Sand" << std::endl;
+            }
+        );
+    });
+    
+    gameplayContext->BindKey(SDL_SCANCODE_3, [this]() {
+        return std::make_unique<SelectMaterialCommand>(
+            MaterialType::Water,
+            [this](MaterialType mat) { 
+                selectedMaterial_ = mat;
+                std::cout << "Selected: Water" << std::endl;
+            }
+        );
+    });
+    
+    gameplayContext->BindKey(SDL_SCANCODE_4, [this]() {
+        return std::make_unique<SelectMaterialCommand>(
+            MaterialType::Stone,
+            [this](MaterialType mat) { 
+                selectedMaterial_ = mat;
+                std::cout << "Selected: Stone" << std::endl;
+            }
+        );
+    });
+    
+    // Clear world
+    gameplayContext->BindKey(SDL_SCANCODE_C, [this]() {
+        return std::make_unique<ClearWorldCommand>(world_);
+    });
+    
+    // Brush size controls
+    gameplayContext->BindKey(SDL_SCANCODE_MINUS, [this]() {
+        brushSize_ = std::max(1, brushSize_ - 2);
+        std::cout << "Brush size: " << brushSize_ << std::endl;
+        return nullptr;
+    });
+    
+    gameplayContext->BindKey(SDL_SCANCODE_EQUALS, [this]() {
+        brushSize_ = std::min(50, brushSize_ + 2);
+        std::cout << "Brush size: " << brushSize_ << std::endl;
+        return nullptr;
+    });
+    
+    // Create recording context with higher priority
+    auto recordingContext = std::make_shared<InputContext>("recording");
+    recordingContext->SetPriority(20);
+    
+    // Recording controls
+    recordingContext->BindKey(SDL_SCANCODE_R, [this]() {
+        return std::make_unique<ToggleRecordingCommand>(
+            [this]() {
+                if (inputSystem_->IsRecording()) {
+                    inputSystem_->StopRecording();
+                    std::cout << "Recording stopped. " 
+                              << inputSystem_->GetRecordedCommands().size() 
+                              << " commands recorded." << std::endl;
+                } else {
+                    inputSystem_->StartRecording();
+                    std::cout << "Recording started..." << std::endl;
+                }
+            }
+        );
+    });
+    
+    recordingContext->BindKey(SDL_SCANCODE_P, [this]() {
+        return std::make_unique<TogglePlaybackCommand>(
+            [this]() {
+                if (inputSystem_->IsPlayingBack()) {
+                    inputSystem_->StopPlayback();
+                    std::cout << "Playback stopped." << std::endl;
+                } else if (!inputSystem_->GetRecordedCommands().empty()) {
+                    inputSystem_->StartPlayback(inputSystem_->GetRecordedCommands());
+                    std::cout << "Playback started..." << std::endl;
+                } else {
+                    std::cout << "No recorded commands to playback." << std::endl;
+                }
+            }
+        );
+    });
+    
+    // Add contexts to the system
+    inputSystem_->AddContext(gameplayContext);
+    inputSystem_->AddContext(recordingContext);
 }
 
 void InputManager::SetupDefaultBindings() {
+    // Keep legacy bindings for backward compatibility
+    // These will be overridden by context bindings
+    
     // Material selection keys (1-4)
     inputSystem_->RegisterKeyCommandFactory(SDL_SCANCODE_1, 
         [this](const SDL_Event&) -> InputCommandPtr {
