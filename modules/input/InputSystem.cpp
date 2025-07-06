@@ -20,6 +20,37 @@ void InputSystem::ProcessEvent(const SDL_Event& event, ::World* world) {
     UpdateMouseState(event);
     UpdateKeyboardState(event);
     
+    // First try context-based input handling
+    InputCommandPtr contextCommand = nullptr;
+    SDL_Keymod modifiers = static_cast<SDL_Keymod>(SDL_GetModState());
+    
+    switch (event.type) {
+        case SDL_KEYDOWN:
+            contextCommand = contextManager_.ProcessKeyDown(event.key.keysym.scancode, modifiers);
+            break;
+        case SDL_KEYUP:
+            contextCommand = contextManager_.ProcessKeyUp(event.key.keysym.scancode, modifiers);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            contextCommand = contextManager_.ProcessMouseButtonDown(event.button.button, modifiers);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            contextCommand = contextManager_.ProcessMouseButtonUp(event.button.button, modifiers);
+            break;
+        case SDL_MOUSEWHEEL:
+            contextCommand = contextManager_.ProcessMouseWheel(event.wheel.y);
+            break;
+        case SDL_MOUSEMOTION:
+            contextCommand = contextManager_.ProcessMouseMotion();
+            break;
+    }
+    
+    if (contextCommand) {
+        QueueCommand(std::move(contextCommand));
+        return; // Context handled the input, don't process legacy bindings
+    }
+    
+    // Fall back to legacy factory-based handling
     auto eventIt = eventFactories_.find(event.type);
     if (eventIt != eventFactories_.end()) {
         for (const auto& factory : eventIt->second) {

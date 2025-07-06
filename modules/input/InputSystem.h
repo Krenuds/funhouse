@@ -1,11 +1,13 @@
 #pragma once
 
 #include "InputCommand.h"
+#include "InputContextManager.h"
 #include <SDL2/SDL.h>
 #include <queue>
 #include <vector>
 #include <functional>
 #include <unordered_map>
+#include <memory>
 
 class World;
 
@@ -62,6 +64,13 @@ public:
     void SetWorld(::World* world) { world_ = world; }
     ::World* GetWorld() { return world_; }
     
+    // Context management
+    InputContextManager& GetContextManager() { return contextManager_; }
+    void AddContext(std::shared_ptr<InputContext> context) { contextManager_.AddContext(context); }
+    void RemoveContext(const std::string& name) { contextManager_.RemoveContext(name); }
+    void ActivateContext(const std::string& name) { contextManager_.ActivateContext(name); }
+    void DeactivateContext(const std::string& name) { contextManager_.DeactivateContext(name); }
+    
 private:
     void UpdateMouseState(const SDL_Event& event);
     void UpdateKeyboardState(const SDL_Event& event);
@@ -84,6 +93,8 @@ private:
     std::chrono::steady_clock::time_point playbackStartTime_;
     
     ::World* world_ = nullptr;
+    
+    InputContextManager contextManager_;
 };
 
 } // namespace Funhouse
