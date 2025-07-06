@@ -165,3 +165,9 @@ The project follows an engine-first approach:
 - After completing a task always make a git commit with a detailed description and push it
 - Use feature branches for new modules
 - Commit messages should follow: "module: description"
+
+## Problem-Solving Strategies
+- If a build fails, or something goes wrong more than TWICE, look it up online.
+
+## Important Reminders
+- Never make assumptions about features or implementations. If you have questions just ask me!

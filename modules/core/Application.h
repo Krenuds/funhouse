@@ -8,6 +8,11 @@
 class PixelBuffer;
 class World;
 
+namespace Funhouse {
+    class InputSystem;
+    class InputManager;
+}
+
 class Application {
 public:
     Application(const std::string& title, int width, int height);
@@ -42,4 +47,6 @@ private:
     
     std::unique_ptr<PixelBuffer> m_pixelBuffer;
     std::unique_ptr<World> m_world;
+    std::unique_ptr<Funhouse::InputSystem> m_inputSystem;
+    std::unique_ptr<Funhouse::InputManager> m_inputManager;
 };

@@ -2,6 +2,8 @@
 #include "rendering/PixelBuffer.h"
 #include "world/World.h"
 #include "materials/Materials.h"
+#include "input/InputSystem.h"
+#include "input/InputManager.h"
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
@@ -77,6 +79,22 @@ bool Application::Initialize() {
     
     // Create world
     m_world = std::make_unique<World>(simWidth, simHeight);
+    
+    // Create input system
+    m_inputSystem = std::make_unique<Funhouse::InputSystem>();
+    m_inputManager = std::make_unique<Funhouse::InputManager>(m_inputSystem.get(), m_world.get());
+    m_inputManager->Initialize();
+    
+    // Print controls
+    std::cout << "\n=== Funhouse Controls ===" << std::endl;
+    std::cout << "Mouse: Left click to draw, Right click to erase" << std::endl;
+    std::cout << "1-4: Select materials (Air, Sand, Water, Stone)" << std::endl;
+    std::cout << "+/-: Increase/decrease brush size" << std::endl;
+    std::cout << "C: Clear world" << std::endl;
+    std::cout << "R: Toggle recording" << std::endl;
+    std::cout << "P: Playback recording" << std::endl;
+    std::cout << "ESC: Exit" << std::endl;
+    std::cout << "========================\n" << std::endl;
     
     // Add some initial materials
     // Create ground
@@ -156,6 +174,12 @@ void Application::Shutdown() {
 void Application::ProcessEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+        // Let input system process the event first
+        if (m_inputSystem) {
+            m_inputSystem->ProcessEvent(event, m_world.get());
+        }
+        
+        // Handle application-level events
         switch (event.type) {
             case SDL_QUIT:
                 m_running = false;
@@ -167,20 +191,28 @@ void Application::ProcessEvents() {
                 break;
         }
     }
+    
+    // Handle continuous mouse input
+    if (m_inputManager) {
+        const auto& mouseState = m_inputSystem->GetMouseState();
+        m_inputManager->HandleMouseDraw(mouseState.x, mouseState.y, 
+                                        mouseState.leftPressed, 
+                                        mouseState.rightPressed);
+    }
 }
 
 void Application::Update(float deltaTime) {
     (void)deltaTime;
     
+    // Update input system
+    if (m_inputSystem) {
+        m_inputSystem->Update();
+        m_inputSystem->ExecuteCommands();
+    }
+    
     // Update the world simulation
     if (m_world) {
         m_world->Update();
-        
-        // Spawn new particles occasionally
-        if (rand() % 10 == 0) {
-            int x = rand() % m_world->GetWidth();
-            m_world->SetPixel(x, 0, rand() % 2 ? MaterialType::Sand : MaterialType::Water);
-        }
     }
 }
 
