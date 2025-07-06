@@ -1,0 +1,3 @@
+# Don't ignore anything in .claude directory
+# We want to track custom commands
+!*

@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Tech Stack
+- C++17 (migrating to C++20 for modules support)
+- GNU Make build system (future: CMake 3.20+)
+- OpenGL 3.3+ for rendering
+- Box2D for rigid body physics
+- SDL2 for window management and input
+- Single-threaded initially, multi-threading planned
+
+## Architecture Principles
+- Data-oriented design for cache efficiency
+- Single-buffer pixel simulation (no double buffering)
+- Chunk-based world management for scalability
+- Interface-based design for testability
+- RAII for automatic resource management
+- Emergent complexity from simple rules
+
 ## Build and Development Commands
 
 ### Building the Project
@@ -85,11 +101,59 @@ Currently targeting Phase 1: Foundation
 - `documentation/falling-sand-engine-guide.md`: Comprehensive technical guide for building the engine
 - `documentation/noita-tech-design-talk.md`: Insights from Noita developers on implementation and design challenges
 
-## Project Structure and Modularity
+## Module Structure
 
-- This project should be organized into modules. Each module should have its own claude.md associated with it. Thus, each module should essentially have its own folder.
+### Core Systems (`modules/core/`)
+- **memory/**: Custom allocators, memory pools
+- **containers/**: Spatial hash maps, chunk arrays
+- **math/**: Vector math, SIMD operations
+
+### Simulation (`modules/simulation/`)  
+- **falling_sand/**: Material update rules, physics simulation
+- **chunk_system/**: 64×64 chunk management, dirty tracking
+- **materials/**: Material definitions and properties
+- **particles/**: High-velocity particle system
+
+### Rendering (`modules/rendering/`)
+- **opengl/**: OpenGL context, shader management
+- Pixel buffer rendering
+- Texture management
+
+### Physics (`modules/physics/`)
+- **box2d/**: Rigid body integration
+- Marching squares contour extraction
+- Physics mesh generation
+
+### Shared (`modules/shared/`)
+- **interfaces/**: Module interfaces
+- **types/**: Common type definitions
+- **utilities/**: Helper functions
+
+## Performance Guidelines
+- Profile before optimizing
+- Minimize allocations in hot paths
+- Use data-oriented design for cache efficiency
+- Batch operations when possible
+- Target: 1 million active pixels at 60 FPS
+
+## Code Style
+- PascalCase for classes: `class MaterialSystem`
+- camelCase for functions: `void updatePixel()`
+- snake_case for variables: `chunk_size`
+- SCREAMING_SNAKE_CASE for constants: `MAX_CHUNKS`
+- Always use `{}` for initialization
+- Prefer `auto` when type is clear from context
+- Use `constexpr` for compile-time constants
+
+## Context Management
+- Use `/clear` between major features
+- Use `/compact` when context reaches 80%
+- Reference specific files with `@filename`
+- Keep module work focused and isolated
 
 ## Workflow Practices
 
 ### Git and Version Control
-- After completing a task always make a git commit with a detailed description and push it.
+- After completing a task always make a git commit with a detailed description and push it
+- Use feature branches for new modules
+- Commit messages should follow: "module: description"
