@@ -42,7 +42,7 @@ The project currently uses GNU Make with C++17. The Makefile is configured to:
 ## High-Level Architecture
 
 ### Project Overview
-Funhouse is a Noita-inspired falling sand simulation engine implementing pixel-based physics. The core concept is that every pixel in the world is simulated with physics properties.
+Funhouse is a general-purpose falling sand physics engine designed to power various types of games. The engine provides a robust foundation for pixel-based physics simulation, allowing developers to create games with emergent gameplay through material interactions. This is an ENGINE project focused on providing tools and APIs for game developers, not a specific game implementation.
 
 ### Key Technical Concepts
 
@@ -83,12 +83,18 @@ The foundation is a single-buffer pixel simulation where materials update based 
 
 3. **World Streaming**: Keeps 12 512×512 areas in memory, streaming to/from disk as player moves
 
-### Development Phases (from ROADMAP.md)
-Currently targeting Phase 1: Foundation
-- Window creation and OpenGL context
-- Basic game loop with fixed timestep
-- Input handling
-- Pixel buffer rendering
+### Development Focus
+The project follows an engine-first approach:
+1. **Core Engine**: Physics simulation, rendering, chunk system
+2. **Developer Tools**: Material editor, level editor, debugging tools
+3. **API Design**: Clean interfaces for game developers
+4. **Example Games**: Demonstrations of engine capabilities
+
+### Engine/Game Separation
+- Keep engine code generic and reusable
+- No game-specific logic in engine modules
+- Examples and demos go in `examples/` directory
+- Tools are separate applications using the engine
 
 ### Important Design Decisions
 - **Single Buffer > Double Buffer**: Better for falling sand, less memory, simpler implementation
@@ -99,7 +105,9 @@ Currently targeting Phase 1: Foundation
 ## Key Documentation Files
 
 - `documentation/falling-sand-engine-guide.md`: Comprehensive technical guide for building the engine
-- `documentation/noita-tech-design-talk.md`: Insights from Noita developers on implementation and design challenges
+- `documentation/noita-tech-design-talk.md`: Technical insights on falling sand implementation
+- `ENGINE_ARCHITECTURE.md`: Pure engine design documentation
+- `TOOLING_ROADMAP.md`: Development tools planning
 
 ## Module Structure
 

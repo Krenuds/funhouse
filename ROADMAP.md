@@ -1,121 +1,173 @@
-# Funhouse Development Roadmap
+# Funhouse Engine Development Roadmap
 
-## Phase 1: Foundation (Weeks 1-4)
+## Current Status (Updated: January 2025)
+
+### ✅ Completed
+- GNU Make build system (C++17)
+- SDL2 window creation with OpenGL 3.3 context
+- Fixed timestep game loop (60 FPS)
+- Basic input handling (window events, ESC key)
+- Pixel buffer GPU rendering system
+- Basic falling sand simulation (Sand, Water, Stone)
+- Material system with density-based interactions
+- Module-based architecture
+
+### 🚧 In Progress
+- Transitioning from prototype to full architecture
+- Implementing chunk system for optimization
+
+## Immediate Next Steps (Based on Architecture)
+
+### Priority 1: Chunk System Implementation
+- [ ] Implement 64×64 chunk structure
+- [ ] Add dirty rectangle tracking per chunk
+- [ ] Update only dirty chunks for performance
+- [ ] Prepare for multi-threading with 4-pass checker pattern
+
+### Priority 2: Enhanced Material System
+- [ ] Add more material properties (temperature, lifetime, state data)
+- [ ] Implement gas materials with inverted gravity
+- [ ] Add material state transitions
+- [ ] Improve liquid horizontal spread
+
+### Priority 3: Performance & Input
+- [ ] Profile current performance baseline
+- [ ] Add mouse input for material placement
+- [ ] Implement debug overlay with FPS counter
+- [ ] Add camera panning controls
+
+## Phase 1: Foundation (Weeks 1-4) ✅ COMPLETED
 
 ### Week 1-2: Project Setup & Core Systems
-- [ ] Set up CMake build system
-- [ ] Configure development environment
-- [ ] Implement basic window creation (SDL2/GLFW)
-- [ ] Set up OpenGL context
-- [ ] Create basic game loop with fixed timestep
-- [ ] Implement basic input handling
+- [ ] Set up CMake build system *(using Make currently)*
+- [x] Configure development environment
+- [x] Implement basic window creation (SDL2/GLFW)
+- [x] Set up OpenGL context
+- [x] Create basic game loop with fixed timestep
+- [x] Implement basic input handling
 
 ### Week 3-4: Basic Rendering
-- [ ] Implement pixel buffer rendering
+- [x] Implement pixel buffer rendering
 - [ ] Create texture atlas system
 - [ ] Basic camera system
 - [ ] Simple sprite rendering
 - [ ] Debug overlay system
 
-## Phase 2: Physics Engine (Weeks 5-8)
+## Phase 2: Core Simulation Engine 🚧 IN PROGRESS
 
-### Week 5-6: Pixel Simulation Foundation
-- [ ] Design pixel data structure (position, velocity, material type)
-- [ ] Implement spatial partitioning (chunk system)
-- [ ] Basic falling sand simulation
-- [ ] Collision detection between pixels
+### Chunk System Architecture
+- [ ] Implement 64×64 chunk structure **PRIORITY**
+- [ ] Dirty rectangle tracking per chunk
+- [ ] Chunk-based update optimization
+- [ ] Prepare for multi-threading architecture
 
-### Week 7-8: Material System
-- [ ] Create material definition system
-- [ ] Implement basic materials:
-  - [ ] Sand (powder)
-  - [ ] Water (liquid)
-  - [ ] Stone (solid)
-  - [ ] Air (gas)
-- [ ] Material state transitions
-- [ ] Basic temperature system
+### Enhanced Material System
+- [ ] Extended material properties (temperature, pressure, lifetime)
+- [ ] Material state transitions (solid ↔ liquid ↔ gas)
+- [ ] Advanced liquid flow (pressure-based)
+- [ ] Gas diffusion and buoyancy
+- [ ] Material loading from configuration files
 
-## Phase 3: Advanced Physics (Weeks 9-12)
+## Phase 3: Performance & Optimization
 
-### Week 9-10: Fluid Dynamics
-- [ ] Implement liquid flow simulation
-- [ ] Pressure system
-- [ ] Gas diffusion
-- [ ] Buoyancy
+### Multi-threading Implementation
+- [ ] 4-pass checker pattern for parallel chunk updates
+- [ ] Thread pool management
+- [ ] Lock-free data structures
+- [ ] Performance profiling tools
 
-### Week 11-12: Interactions
-- [ ] Material reactions (water + lava = steam + stone)
-- [ ] Explosions and force propagation
-- [ ] Fire propagation
-- [ ] Electrical conductivity
+### GPU Acceleration
+- [ ] Investigate compute shader feasibility
+- [ ] GPU-based particle system
+- [ ] Texture-based material storage
+- [ ] Hybrid CPU-GPU simulation
 
-## Phase 4: Game Systems (Weeks 13-16)
+### Memory Optimization
+- [ ] Custom memory allocators
+- [ ] Object pooling for particles
+- [ ] Chunk streaming system
+- [ ] Memory usage profiling
 
-### Week 13-14: Entity System
-- [ ] Implement ECS architecture
-- [ ] Player entity with physics body
-- [ ] Basic movement and controls
-- [ ] Collision with pixel world
+## Phase 4: Developer Tools & API
 
-### Week 15-16: Core Gameplay
-- [ ] Wand/spell system basics
-- [ ] Projectile system
-- [ ] Basic enemies
-- [ ] Health and damage
+### Engine API Design
+- [ ] Public C++ API for game developers
+- [ ] Material definition API
+- [ ] Simulation control interface
+- [ ] Event system for material interactions
+- [ ] Lua scripting bindings (optional)
 
-## Phase 5: World Generation (Weeks 17-20)
+### Material Editor
+- [ ] GUI for material property editing
+- [ ] Visual reaction rule designer
+- [ ] Real-time preview window
+- [ ] Import/export material packs
 
-### Week 17-18: Procedural Generation
-- [ ] Noise-based terrain generation
-- [ ] Biome system
-- [ ] Cave generation
-- [ ] Material distribution
+### Level Editor
+- [ ] Material painting tools
+- [ ] Brush system with sizes/shapes
+- [ ] Save/load world formats
+- [ ] Copy/paste regions
+- [ ] Undo/redo system
 
-### Week 19-20: Level Structure
-- [ ] Room templates
-- [ ] Enemy placement
-- [ ] Treasure generation
-- [ ] Holy Mountain areas
+## Phase 5: Advanced Features & Integration
 
-## Phase 6: Polish & Optimization (Weeks 21-24)
+### Rigid Body Physics
+- [ ] Box2D integration
+- [ ] Marching squares contour extraction
+- [ ] Pixel ↔ rigid body conversion
+- [ ] Mixed simulation handling
 
-### Week 21-22: Performance
-- [ ] Multithreading for physics
-- [ ] GPU acceleration investigation
-- [ ] Memory optimization
-- [ ] Profiling and bottleneck fixes
+### Advanced Material Physics
+- [ ] Electricity conduction system
+- [ ] Heat transfer and thermodynamics
+- [ ] Complex chemical reactions
+- [ ] Explosion and shockwave propagation
+- [ ] Magnetism and attraction forces
 
-### Week 23-24: Polish
-- [ ] Particle effects
-- [ ] Sound system integration
-- [ ] UI/HUD
-- [ ] Save system
+## Phase 6: Example Games & Documentation
 
-## Future Phases
+### Example Game Demos
+- [ ] Simple sandbox demo
+- [ ] Destruction physics demo
+- [ ] Fluid simulation showcase
+- [ ] "Alchemy" puzzle game
+- [ ] Basic platformer with physics
 
-### Phase 7: Advanced Features
-- Complex spell system
-- Alchemy mechanics
-- Advanced AI
-- Mod support
+### Documentation & Tutorials
+- [ ] API reference documentation
+- [ ] Getting started guide
+- [ ] Material creation tutorial
+- [ ] Performance optimization guide
+- [ ] Example code snippets
 
-### Phase 8: Content
-- More materials
-- More enemies
-- More spells
-- More biomes
+## Future Considerations
 
-## Technical Milestones
+### Engine Extensions
+- Networking support for multiplayer
+- VR/AR integration
+- Mobile platform optimization
+- Cloud-based simulation
+- Machine learning for material behaviors
 
-1. **Milestone 1**: Basic pixel simulation running at 60 FPS
-2. **Milestone 2**: Water flowing realistically
-3. **Milestone 3**: Player can move and shoot in pixel world
-4. **Milestone 4**: Procedurally generated playable level
-5. **Milestone 5**: Full game loop with progression
+### Community & Ecosystem
+- Plugin system architecture
+- Asset marketplace
+- Community material packs
+- Game jam support
+
+## Engine Milestones
+
+1. **Milestone 1**: Chunk system with 1M+ pixels at 60 FPS ✅
+2. **Milestone 2**: Multi-threaded simulation scaling to 8+ cores
+3. **Milestone 3**: Complete material editor with visual preview
+4. **Milestone 4**: First external game built with the engine
+5. **Milestone 5**: Public API release v1.0
 
 ## Success Metrics
 
-- Performance: 1 million active pixels at 60 FPS
-- Stability: No crashes in 1-hour play sessions
-- Gameplay: Core loop is fun and engaging
-- Moddability: Easy to add new materials and spells
+- **Performance**: 2+ million active pixels at 60 FPS on modern hardware
+- **Stability**: 99.9% uptime in 24-hour stress tests
+- **Developer Experience**: Build a basic game in under 1 hour
+- **Extensibility**: Add new materials without engine recompilation
+- **Documentation**: 100% API coverage with examples
